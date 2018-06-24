@@ -20,33 +20,31 @@ type Observatory interface {
 	StartTraceFromContext(ctx context.Context, operationName string, opts ...opentracing.StartSpanOption) (opentracing.Span, context.Context)
 }
 
-// DefaultObservatory is a good default Observatory for the most common use
-// cases
-type DefaultObservatory struct {
+type defaultObservatory struct {
 	tracer opentracing.Tracer
 	config jaegercfg.Configuration
 	closer io.Closer
 }
 
-func (o *DefaultObservatory) Tracer() opentracing.Tracer {
+func (o *defaultObservatory) Tracer() opentracing.Tracer {
 	return o.tracer
 }
 
-func (o *DefaultObservatory) Close() {
+func (o *defaultObservatory) Close() {
 	if o.closer != nil {
 		o.closer.Close()
 	}
 }
 
-func (o *DefaultObservatory) StartTrace(subject string) opentracing.Span {
+func (o *defaultObservatory) StartTrace(subject string) opentracing.Span {
 	return o.tracer.StartSpan(subject)
 }
 
-func (o *DefaultObservatory) StartChildTrace(subject string, parent opentracing.Span) opentracing.Span {
+func (o *defaultObservatory) StartChildTrace(subject string, parent opentracing.Span) opentracing.Span {
 	return o.tracer.StartSpan(subject, opentracing.ChildOf(parent.Context()))
 }
 
-func (o *DefaultObservatory) StartTraceFromContext(ctx context.Context, operationName string, opts ...opentracing.StartSpanOption) (opentracing.Span, context.Context) {
+func (o *defaultObservatory) StartTraceFromContext(ctx context.Context, operationName string, opts ...opentracing.StartSpanOption) (opentracing.Span, context.Context) {
 	var span opentracing.Span
 	if parentSpan := opentracing.SpanFromContext(ctx); parentSpan != nil {
 		opts = append(opts, opentracing.ChildOf(parentSpan.Context()))
@@ -57,8 +55,10 @@ func (o *DefaultObservatory) StartTraceFromContext(ctx context.Context, operatio
 	return span, opentracing.ContextWithSpan(ctx, span)
 }
 
-func MakeDefaultObservatoryFromEnv() *DefaultObservatory {
-	result := new(DefaultObservatory)
+// MakeObservatoryFromEnv creates a default observatory that is useful for
+// most common use cases.
+func MakeObservatoryFromEnv() Observatory {
+	result := new(defaultObservatory)
 
 	cfg, err := jaegercfg.FromEnv()
 	if err != nil {
