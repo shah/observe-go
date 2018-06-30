@@ -1,3 +1,5 @@
+// TODO: This library might be better to replace with or use with OpenCensus
+//       https://opencensus.io/go/
 package observe
 
 import (
