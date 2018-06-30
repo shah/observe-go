@@ -12,6 +12,8 @@ import (
 
 // Observatory is a utility interface for dealing with common OpenTracing,
 // OpenMetrics, and other "observational" requirements in services and apps.
+// TODO: Integrate https://github.com/ExpansiveWorlds/instrumentedsql to allow
+//       instrumenting SQL through driver wrappers
 type Observatory interface {
 	Tracer() opentracing.Tracer
 	Close()
